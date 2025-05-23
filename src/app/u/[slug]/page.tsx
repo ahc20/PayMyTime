@@ -1,52 +1,81 @@
+// src/app/u/[slug]/page.tsx
 import { db } from '@/lib/firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { UserProfile } from '@/types/user';
 import { notFound } from 'next/navigation';
 
-// Définition du type User strict
-interface User {
-  slug: string;
-  price: number;
-  calendly: string;
+interface Props {
+  params: { slug: string };
 }
 
-// Génération statique des slugs connus (facultatif si fallback en dynamique)
-export async function generateStaticParams() {
-  const snapshot = await getDocs(collection(db, 'users'));
-  const users = snapshot.docs.map((doc) => doc.data() as User);
-
-  return users.map((user) => ({ slug: user.slug }));
+async function getUserBySlug(slug: string): Promise<UserProfile | null> {
+  try {
+    const q = query(collection(db, 'users'), where('slug', '==', slug));
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) {
+      return null;
+    }
+    
+    const doc = querySnapshot.docs[0];
+    return { id: doc.id, ...doc.data() } as UserProfile;
+  } catch (error) {
+    console.error('Erreur récupération utilisateur:', error);
+    return null;
+  }
 }
 
-// Page principale
-export default async function ProfilPage({ params }: { params: { slug: string } }) {
-  const snapshot = await getDocs(collection(db, 'users'));
-  const users = snapshot.docs.map((doc) => doc.data() as User);
-  const user = users.find((u) => u.slug === params.slug);
+export default async function PublicProfilePage({ params }: Props) {
+  const user = await getUserBySlug(params.slug);
 
   if (!user) {
     notFound();
   }
 
   return (
-    <div style={{ textAlign: 'center', marginTop: '100px' }}>
-      <h1>Profil PayMyTime : {user.slug}</h1>
-      <p style={{ fontSize: '20px' }}>💸 {user.price} € / 15 min</p>
-      <a href={user.calendly} target="_blank" rel="noopener noreferrer">
-        <button
+    <div style={{ 
+      maxWidth: '600px', 
+      margin: '50px auto', 
+      padding: '20px',
+      textAlign: 'center'
+    }}>
+      <h1>{user.firstName} {user.lastName}</h1>
+      <p style={{ fontSize: '18px', color: '#666' }}>
+        Consultant disponible pour {user.hourlyRate}€/heure
+      </p>
+      
+      <div style={{
+        backgroundColor: '#f5f5f5',
+        padding: '30px',
+        borderRadius: '10px',
+        marginTop: '30px'
+      }}>
+        <h2>Réserver un créneau</h2>
+        <p>Prêt à discuter de votre projet ?</p>
+        
+        <a 
+          href={user.calendlyLink}
+          target="_blank"
+          rel="noopener noreferrer"
           style={{
+            display: 'inline-block',
+            padding: '15px 30px',
             backgroundColor: '#0a66c2',
             color: 'white',
-            padding: '12px 24px',
+            textDecoration: 'none',
             borderRadius: '5px',
-            border: 'none',
             fontSize: '16px',
-            cursor: 'pointer',
-            marginTop: '20px',
+            marginTop: '15px'
           }}
         >
           Réserver un appel
-        </button>
-      </a>
+        </a>
+      </div>
+
+      <div style={{ marginTop: '40px', fontSize: '14px', color: '#999' }}>
+        <p>Contact: {user.email}</p>
+        <p>Membre depuis {user.createdAt ? new Date(user.createdAt.seconds * 1000).toLocaleDateString('fr-FR') : 'Récemment'}</p>
+      </div>
     </div>
   );
 }

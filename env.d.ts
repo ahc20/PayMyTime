@@ -1,12 +1,4 @@
-/// <reference types="next" />
-
-declare namespace NodeJS {
-    interface ProcessEnv {
-      NEXT_PUBLIC_FIREBASE_API_KEY: string;
-      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: string;
-      NEXT_PUBLIC_FIREBASE_PROJECT_ID: string;
-      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: string;
-      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: string;
-      NEXT_PUBLIC_FIREBASE_APP_ID: string;
-    }
-  }
+NEXT_PUBLIC_LINKEDIN_CLIENT_ID=78vuwb2pp2zv7e
+NEXT_PUBLIC_LINKEDIN_REDIRECT_URI=https://paymytime.vercel.app/api/auth/callback
+LINKEDIN_CLIENT_ID=78vuwb2pp2zv7e
+LINKEDIN_CLIENT_SECRET=WPL_AP1.bu6MrupofK2oXrTG.BTD08w==
