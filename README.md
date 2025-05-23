@@ -1,36 +1,130 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PayMyTime
 
-## Getting Started
+**Monétise ton temps via LinkedIn + Calendly** ✨
 
-First, run the development server:
+> Permets à tout utilisateur de créer une page publique (type `/u/ahcene`) avec un tarif en € pour 15 min et un lien Calendly payant. L'utilisateur s'authentifie via LinkedIn, ses données sont sauvegardées dans Firebase, puis affichées publiquement.
+
+---
+
+## ✨ Fonctionnalités principales
+
+* Authentification OAuth2 via LinkedIn
+* Sauvegarde des données utilisateurs (nom, email, ID) dans Firebase
+* Formulaire onboarding :
+
+  * tarif en € / 15 min
+  * lien Calendly avec paiement
+  * identifiant unique (slug)
+* Page dynamique `/u/[slug]`
+* Stack : **Next.js App Router + TypeScript + Firebase + Vercel**
+
+---
+
+## 🧱 Arborescence
+
+```
+/paymytime
+├── .env.local
+├── src
+│   ├── app
+│   │   ├── onboarding/page.tsx         # Formulaire user (prix + lien calendly + slug)
+│   │   ├── u/[slug]/page.tsx           # Page publique dynamique
+│   ├── pages/api/auth/callback/route.ts  # LinkedIn callback handler
+│   ├── lib/firebase.ts                 # Connexion à Firestore
+│   └── types/user.ts                   # Typage des données user
+```
+
+---
+
+## 🚀 Installation locale
+
+### 1. Clone le repo
+
+```bash
+git clone https://github.com/tonpseudo/paymytime.git
+cd paymytime
+```
+
+### 2. Installe les dépendances
+
+```bash
+npm install
+```
+
+### 3. Crée le fichier `.env.local`
+
+```ini
+NEXT_PUBLIC_LINKEDIN_CLIENT_ID=78vuwb2pp2zv7e
+LINKEDIN_CLIENT_SECRET=xxxxx
+NEXT_PUBLIC_LINKEDIN_REDIRECT_URI=https://paymytime.vercel.app/api/auth/callback
+
+NEXT_PUBLIC_FIREBASE_API_KEY=...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+NEXT_PUBLIC_FIREBASE_APP_ID=...
+```
+
+### 4. Lance le serveur de dev
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚨 En cas d'erreur
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Erreur: `process is not defined`
 
-## Learn More
+> Tu as essayé d'afficher une variable d'environnement dans le navigateur sans `NEXT_PUBLIC_`
 
-To learn more about Next.js, take a look at the following resources:
+✉️ Solution : Toutes les variables accessibles au navigateur doivent commencer par `NEXT_PUBLIC_`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🚫 Problème résolu
 
-## Deploy on Vercel
+> Le bug principal était que les données LinkedIn se perdaient après le callback.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+✅ Correction : maintenant elles sont sauvegardées dans Firebase **et réutilisées sur la page onboarding** !
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🚧 TODO / Améliorations
+
+* [ ] Ajouter authentification Firebase via LinkedIn (actuellement juste OAuth LinkedIn)
+* [ ] Permettre de modifier ses infos via un dashboard privé
+* [ ] Ajout d'un tag UTM pour suivre les clics
+
+---
+
+## 📁 Déploiement
+
+### 1. Push sur GitHub
+
+```bash
+git remote add origin https://github.com/tonpseudo/paymytime.git
+git push -u origin main
+```
+
+### 2. Connecte Vercel à ton GitHub
+
+* Vercel importe les variables `.env.local`
+* Vérifie bien que `paymytime.vercel.app` est utilisé comme `redirect_uri` LinkedIn
+
+---
+
+## 🌟 Auteur
+
+* Ahcène Bensalama
+* Projet 2025 - Auth + Firestore + Next.js
+
+---
+
+## ✨ Exemple d'URL publique :
+
+```
+https://paymytime.vercel.app/u/ahcene
+```
