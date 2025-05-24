@@ -1,24 +1,22 @@
-'use client';
-
 import { useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
 
-export default function LinkedinSuccessPage() {
+export default function LinkedInSuccessPage() {
   const searchParams = useSearchParams();
+  const firstName = searchParams.get('firstName') || '';
+  const lastName = searchParams.get('lastName') || '';
+  const email = searchParams.get('email') || '';
 
-  useEffect(() => {
-    const firstName = searchParams.get('firstName');
-    const lastName = searchParams.get('lastName');
-    const email = searchParams.get('email');
-
-    if (firstName && lastName && email) {
-      localStorage.setItem(
-        'linkedinUser',
-        JSON.stringify({ firstName, lastName, email })
-      );
+  if (!firstName || !lastName || !email) {
+    if (typeof window !== 'undefined') {
       window.location.href = '/onboarding';
     }
-  }, [searchParams]);
+    return null;
+  }
 
-  return <p>Redirection en cours...</p>;
+  return (
+    <div style={{ padding: '2rem', textAlign: 'center' }}>
+      <h1>Bienvenue {firstName} {lastName} 👋</h1>
+      <p>Redirection LinkedIn réussie.</p>
+    </div>
+  );
 }

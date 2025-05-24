@@ -1,4 +1,10 @@
-NEXT_PUBLIC_LINKEDIN_CLIENT_ID=78vuwb2pp2zv7e
-NEXT_PUBLIC_LINKEDIN_REDIRECT_URI=https://paymytime.vercel.app/api/auth/callback
-LINKEDIN_CLIENT_ID=78vuwb2pp2zv7e
-LINKEDIN_CLIENT_SECRET=WPL_AP1.bu6MrupofK2oXrTG.BTD08w==
+/// <reference types="next" />
+
+declare namespace NodeJS {
+  interface ProcessEnv {
+    NEXT_PUBLIC_LINKEDIN_CLIENT_ID: string;
+    NEXT_PUBLIC_LINKEDIN_REDIRECT_URI: string;
+    LINKEDIN_CLIENT_ID: string;
+    LINKEDIN_CLIENT_SECRET: string;
+  }
+}

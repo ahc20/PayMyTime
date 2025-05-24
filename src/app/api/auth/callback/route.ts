@@ -6,34 +6,61 @@ const clientSecret = process.env.LINKEDIN_CLIENT_SECRET!;
 const redirectUri = process.env.NEXT_PUBLIC_LINKEDIN_REDIRECT_URI!;
 
 export async function GET(req: NextRequest) {
-  const code = req.nextUrl.searchParams.get('code');
-  if (!code) return new NextResponse('Code manquant', { status: 400 });
+  try {
+    const code = req.nextUrl.searchParams.get('code');
+    if (!code) {
+      return new NextResponse('Code manquant', { status: 400 });
+    }
 
-  const tokenRes = await axios.post(
-    'https://www.linkedin.com/oauth/v2/accessToken',
-    new URLSearchParams({
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: redirectUri,
-      client_id: clientId,
-      client_secret: clientSecret
-    }),
-    { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
-  );
+    const tokenRes = await axios.post(
+      'https://www.linkedin.com/oauth/v2/accessToken',
+      new URLSearchParams({
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: redirectUri,
+        client_id: clientId,
+        client_secret: clientSecret
+      }),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      }
+    );
 
-  const accessToken = tokenRes.data.access_token;
-  const profile = await axios.get('https://api.linkedin.com/v2/me', {
-    headers: { Authorization: `Bearer ${accessToken}` }
-  });
+    const accessToken = tokenRes.data.access_token;
 
-  const email = await axios.get('https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))', {
-    headers: { Authorization: `Bearer ${accessToken}` }
-  });
+    const profile = await axios.get('https://api.linkedin.com/v2/me', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
-  const url = new URL('/linkedin-success', req.url);
-  url.searchParams.set('firstName', userData.firstName);
-  url.searchParams.set('lastName', userData.lastName);
-  url.searchParams.set('email', userData.email);
+    const email = await axios.get(
+      'https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))',
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
 
-return NextResponse.redirect(url);
+    const userData = {
+      firstName: profile.data.localizedFirstName,
+      lastName: profile.data.localizedLastName,
+      email: email.data.elements[0]['handle~'].emailAddress,
+    };
+
+    const url = new URL('/linkedin-success', req.url);
+    url.searchParams.set('firstName', userData.firstName);
+    url.searchParams.set('lastName', userData.lastName);
+    url.searchParams.set('email', userData.email);
+
+    return NextResponse.redirect(url);
+  } catch (error) {
+    console.error('Erreur callback LinkedIn :', error);
+    return new NextResponse('Erreur serveur lors du traitement du callback LinkedIn.', {
+      status: 500,
+    });
+  }
 }
