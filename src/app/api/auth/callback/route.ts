@@ -8,9 +8,7 @@ const redirectUri = process.env.NEXT_PUBLIC_LINKEDIN_REDIRECT_URI!;
 export async function GET(req: NextRequest) {
   try {
     const code = req.nextUrl.searchParams.get('code');
-    if (!code) {
-      return new NextResponse('Code manquant', { status: 400 });
-    }
+    if (!code) return new NextResponse('Code manquant', { status: 400 });
 
     const tokenRes = await axios.post(
       'https://www.linkedin.com/oauth/v2/accessToken',
@@ -21,34 +19,25 @@ export async function GET(req: NextRequest) {
         client_id: clientId,
         client_secret: clientSecret
       }),
-      {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      }
+      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
     );
 
     const accessToken = tokenRes.data.access_token;
 
-    const profile = await axios.get('https://api.linkedin.com/v2/me', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-
-    const email = await axios.get(
-      'https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))',
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    const [profile, email] = await Promise.all([
+      axios.get('https://api.linkedin.com/v2/me', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      }),
+      axios.get(
+        'https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))',
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      )
+    ]);
 
     const userData = {
       firstName: profile.data.localizedFirstName,
       lastName: profile.data.localizedLastName,
-      email: email.data.elements[0]['handle~'].emailAddress,
+      email: email.data.elements[0]['handle~'].emailAddress
     };
 
     const url = new URL('/linkedin-success', req.url);
@@ -58,9 +47,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.redirect(url);
   } catch (error) {
-    console.error('Erreur callback LinkedIn :', error);
-    return new NextResponse('Erreur serveur lors du traitement du callback LinkedIn.', {
-      status: 500,
-    });
+    console.error('Erreur LinkedIn callback:', error);
+    return new NextResponse('Erreur LinkedIn callback', { status: 500 });
   }
 }
