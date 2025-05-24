@@ -6,8 +6,5 @@ export interface UserProfile {
   slug: string;
   calendlyLink: string;
   hourlyRate: number;
-  createdAt?: {
-    seconds: number;
-    nanoseconds: number;
-  };
+  createdAt?: { seconds: number; nanoseconds: number };
 }

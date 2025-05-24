@@ -1,25 +1,31 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function LinkedInSuccessPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const firstName = searchParams.get('firstName');
-    const lastName = searchParams.get('lastName');
-    const email = searchParams.get('email');
+    const lastName  = searchParams.get('lastName');
+    const email     = searchParams.get('email');
 
     if (firstName && lastName && email) {
-      localStorage.setItem(
-        'linkedinUser',
-        JSON.stringify({ firstName, lastName, email })
-      );
-
-      window.location.href = '/onboarding';
+      localStorage.setItem('linkedinUser', JSON.stringify({ firstName, lastName, email }));
+      router.push('/onboarding');
+    } else {
+      console.error('Paramètres LinkedIn manquants');
     }
-  }, [searchParams]);
+    setIsLoading(false);
+  }, [searchParams, router]);
 
-  return <p>Redirection en cours...</p>;
+  return (
+    <div style={{ textAlign: 'center', marginTop: '100px' }}>
+      {isLoading ? <p>Connexion en cours...</p> : <p>Échec de la redirection</p>}
+    </div>
+  );
 }

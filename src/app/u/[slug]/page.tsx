@@ -1,48 +1,29 @@
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { UserProfile } from '@/types/user';
 import { notFound } from 'next/navigation';
+import { UserProfile } from '@/types/user';
 
-// ⬇️ CORRECTION ICI
-export default async function PublicProfilePage({ params }: { params: { slug: string } }) {
-  async function getUserBySlug(slug: string): Promise<UserProfile | null> {
-    try {
-      const q = query(collection(db, 'users'), where('slug', '==', slug));
-      const snapshot = await getDocs(q);
-      if (snapshot.empty) return null;
-      const doc = snapshot.docs[0];
-      return { id: doc.id, ...doc.data() } as UserProfile;
-    } catch (err) {
-      console.error('Erreur Firebase:', err);
-      return null;
-    }
-  }
+type Props = { params: { slug: string } };
 
+async function getUserBySlug(slug: string): Promise<UserProfile | null> {
+  const q = query(collection(db, 'users'), where('slug', '==', slug));
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
+  const doc = snap.docs[0];
+  return { id: doc.id, ...doc.data() } as UserProfile;
+}
+
+export default async function PublicProfilePage({ params }: Props) {
   const user = await getUserBySlug(params.slug);
   if (!user) notFound();
-
   return (
-    <div style={{ maxWidth: '600px', margin: '50px auto', padding: '20px', textAlign: 'center' }}>
+    <div style={{ maxWidth:'600px', margin:'50px auto', padding:'20px', textAlign:'center' }}>
       <h1>{user.firstName} {user.lastName}</h1>
-      <p style={{ fontSize: '18px', color: '#666' }}>
-        Consultant disponible pour {user.hourlyRate}€/heure
-      </p>
-
-      <div style={{ backgroundColor: '#f5f5f5', padding: '30px', borderRadius: '10px', marginTop: '30px' }}>
-        <h2>Réserver un créneau</h2>
-        <p>Prêt à discuter de votre projet ?</p>
-        <a href={user.calendlyLink} target="_blank" rel="noopener noreferrer" style={{
-          display: 'inline-block', padding: '15px 30px', backgroundColor: '#0a66c2',
-          color: 'white', textDecoration: 'none', borderRadius: '5px', fontSize: '16px', marginTop: '15px'
-        }}>
-          Réserver un appel
-        </a>
-      </div>
-
-      <div style={{ marginTop: '40px', fontSize: '14px', color: '#999' }}>
-        <p>Contact: {user.email}</p>
-        <p>Membre depuis {user.createdAt ? new Date(user.createdAt.seconds * 1000).toLocaleDateString('fr-FR') : 'Récemment'}</p>
-      </div>
+      <p>Tarif : {user.hourlyRate}€/h</p>
+      <a href={user.calendlyLink} target="_blank" style={{background:'#0a66c2', color:'white', padding:'10px 20px', borderRadius:'5px'}}>
+        Réserver un appel
+      </a>
+      <p style={{marginTop:'20px'}}>Contact : {user.email}</p>
     </div>
   );
 }
