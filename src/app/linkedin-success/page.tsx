@@ -1,32 +1,17 @@
+// src/app/linkedin-success/page.tsx
 'use client';
 
-import { useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 export default function LinkedInSuccessPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
-
-  useEffect(() => {
-    const firstName = searchParams.get('firstName');
-    const lastName = searchParams.get('lastName');
-    const email = searchParams.get('email');
-
-    if (firstName && lastName && email) {
-      localStorage.setItem(
-        'linkedinUser',
-        JSON.stringify({ firstName, lastName, email })
-      );
-      router.push('/onboarding');
-    } else {
-      alert('Données LinkedIn manquantes.');
-    }
-  }, [searchParams, router]);
+  const firstName = searchParams.get('firstName');
+  const lastName = searchParams.get('lastName');
 
   return (
-    <div style={{ textAlign: 'center', marginTop: '100px' }}>
-      <h2>Connexion LinkedIn réussie...</h2>
-      <p>Redirection vers l’onboarding...</p>
+    <div style={{ padding: 40, textAlign: 'center' }}>
+      <h1>Bienvenue {firstName} {lastName} 👋</h1>
+      <p>Tu es connecté à PayMyTime via LinkedIn.</p>
     </div>
   );
 }
