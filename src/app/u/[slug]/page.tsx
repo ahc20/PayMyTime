@@ -3,55 +3,38 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { UserProfile } from '@/types/user';
 import { notFound } from 'next/navigation';
 
+// ⬇️ CORRECTION ICI
 export default async function PublicProfilePage({ params }: { params: { slug: string } }) {
-  const { slug } = params;
-
-  const q = query(collection(db, 'users'), where('slug', '==', slug));
-  const querySnapshot = await getDocs(q);
-
-  if (querySnapshot.empty) {
-    notFound();
+  async function getUserBySlug(slug: string): Promise<UserProfile | null> {
+    try {
+      const q = query(collection(db, 'users'), where('slug', '==', slug));
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) return null;
+      const doc = snapshot.docs[0];
+      return { id: doc.id, ...doc.data() } as UserProfile;
+    } catch (err) {
+      console.error('Erreur Firebase:', err);
+      return null;
+    }
   }
 
-  const doc = querySnapshot.docs[0];
-  const user = { id: doc.id, ...doc.data() } as UserProfile;
+  const user = await getUserBySlug(params.slug);
+  if (!user) notFound();
 
   return (
-    <div style={{ 
-      maxWidth: '600px', 
-      margin: '50px auto', 
-      padding: '20px',
-      textAlign: 'center'
-    }}>
+    <div style={{ maxWidth: '600px', margin: '50px auto', padding: '20px', textAlign: 'center' }}>
       <h1>{user.firstName} {user.lastName}</h1>
       <p style={{ fontSize: '18px', color: '#666' }}>
         Consultant disponible pour {user.hourlyRate}€/heure
       </p>
 
-      <div style={{
-        backgroundColor: '#f5f5f5',
-        padding: '30px',
-        borderRadius: '10px',
-        marginTop: '30px'
-      }}>
+      <div style={{ backgroundColor: '#f5f5f5', padding: '30px', borderRadius: '10px', marginTop: '30px' }}>
         <h2>Réserver un créneau</h2>
         <p>Prêt à discuter de votre projet ?</p>
-
-        <a 
-          href={user.calendlyLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: 'inline-block',
-            padding: '15px 30px',
-            backgroundColor: '#0a66c2',
-            color: 'white',
-            textDecoration: 'none',
-            borderRadius: '5px',
-            fontSize: '16px',
-            marginTop: '15px'
-          }}
-        >
+        <a href={user.calendlyLink} target="_blank" rel="noopener noreferrer" style={{
+          display: 'inline-block', padding: '15px 30px', backgroundColor: '#0a66c2',
+          color: 'white', textDecoration: 'none', borderRadius: '5px', fontSize: '16px', marginTop: '15px'
+        }}>
           Réserver un appel
         </a>
       </div>
