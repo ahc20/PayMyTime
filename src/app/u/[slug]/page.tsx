@@ -4,7 +4,7 @@ import { UserProfile } from '@/types/user';
 import { notFound } from 'next/navigation';
 
 export default async function PublicProfilePage({ params }: { params: { slug: string } }) {
-  const slug = params.slug;
+  const { slug } = params;
 
   const q = query(collection(db, 'users'), where('slug', '==', slug));
   const querySnapshot = await getDocs(q);
@@ -27,7 +27,7 @@ export default async function PublicProfilePage({ params }: { params: { slug: st
       <p style={{ fontSize: '18px', color: '#666' }}>
         Consultant disponible pour {user.hourlyRate}€/heure
       </p>
-      
+
       <div style={{
         backgroundColor: '#f5f5f5',
         padding: '30px',
@@ -36,7 +36,7 @@ export default async function PublicProfilePage({ params }: { params: { slug: st
       }}>
         <h2>Réserver un créneau</h2>
         <p>Prêt à discuter de votre projet ?</p>
-        
+
         <a 
           href={user.calendlyLink}
           target="_blank"
